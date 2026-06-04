@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MedReel">
+<title>MedReel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#07070f;--font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;}
+html,body{height:100%;width:100%;background:var(--bg);overflow:hidden;font-family:var(--font-b);touch-action:none;}
+#reel{width:100%;height:100dvh;overflow:hidden;position:relative;}
+#track{display:flex;flex-direction:column;will-change:transform;transition:transform 0.48s cubic-bezier(0.4,0,0.2,1);}
+.card{width:100vw;height:100dvh;flex-shrink:0;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;}
+.card-glow{position:absolute;width:70vw;height:70vw;max-width:420px;max-height:420px;border-radius:50%;opacity:0.13;top:8%;left:50%;transform:translateX(-50%);pointer-events:none;filter:blur(72px);}
+.card-glow2{position:absolute;width:45vw;height:45vw;border-radius:50%;opacity:0.07;bottom:4%;right:-8%;pointer-events:none;filter:blur(52px);}
+.badge{position:absolute;top:max(20px,env(safe-area-inset-top,20px));left:20px;font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 12px;border-radius:20px;border:1px solid;}
+.cnum{position:absolute;top:max(22px,env(safe-area-inset-top,22px));right:20px;font-family:var(--font-d);font-size:11px;color:rgba(255,255,255,0.28);letter-spacing:0.05em;}
+.stage{width:88%;max-width:380px;display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:5px 9px;min-height:220px;padding:20px 0;z-index:1;}
+.w{font-family:var(--font-b);font-size:clamp(18px,5vw,23px);font-weight:300;line-height:1.5;color:rgba(255,255,255,0.22);transition:color 0.12s ease;display:inline-block;padding:1px 3px;border-radius:4px;}
+.w.on{color:rgba(255,255,255,0.88);}
+.w.buzz{font-family:var(--font-d);font-weight:700;font-size:clamp(19px,5.2vw,24px);padding:1px 9px 2px;border-radius:6px;}
+.w.buzz.on{animation:buzzpop 0.26s cubic-bezier(0.34,1.56,0.64,1) forwards;}
+@keyframes buzzpop{0%{transform:scale(0.88);}60%{transform:scale(1.1);}100%{transform:scale(1);}}
+.pline{position:absolute;bottom:0;left:0;height:2px;width:0%;transition:width 0.1s linear;opacity:0.4;}
+.bbar{position:absolute;bottom:max(28px,env(safe-area-inset-bottom,28px));width:100%;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.ctrls{display:flex;align-items:center;gap:22px;}
+.ctrl{border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s;outline:none;-webkit-tap-highlight-color:transparent;}
+.ctrl:active{transform:scale(0.88);}
+.csm{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);}
+.cpl{width:62px;height:62px;border-radius:50%;color:#fff;}
+.shint{font-family:var(--font-d);font-size:10px;letter-spacing:0.1em;color:rgba(255,255,255,0.22);text-transform:uppercase;opacity:0;transition:opacity 0.5s;pointer-events:none;}
+.shint.show{opacity:1;}
+.dots{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:10;}
+.dot{width:3px;height:3px;border-radius:3px;background:rgba(255,255,255,0.2);transition:height 0.35s cubic-bezier(0.4,0,0.2,1),background 0.35s;}
+.dot.active{height:20px;background:rgba(255,255,255,0.75);}
+.toast{position:absolute;top:max(68px,calc(env(safe-area-inset-top,20px)+48px));left:50%;transform:translateX(-50%) translateY(-6px);background:rgba(255,255,255,0.09);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-family:var(--font-d);font-size:11px;letter-spacing:0.06em;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity 0.25s,transform 0.25s;pointer-events:none;white-space:nowrap;z-index:100;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.ibanner{position:absolute;bottom:max(108px,calc(env(safe-area-inset-bottom,0px)+108px));left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:14px 18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;z-index:50;max-width:270px;text-align:center;opacity:0;transition:opacity 0.4s;pointer-events:none;}
+.ibanner.show{opacity:1;pointer-events:auto;}
+.ibanner p{font-size:12px;color:rgba(255,255,255,0.48);line-height:1.55;}
+.ibanner strong{font-family:var(--font-d);font-size:12px;font-weight:700;color:rgba(255,255,255,0.82);}
+.iclose{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;padding:0;line-height:1;}
+</style>
+</head>
+<body>
+<div id="reel">
+  <div id="track"></div>
+  <div class="dots" id="dots"></div>
+  <div class="toast" id="toast"></div>
+  <div class="ibanner" id="ib">
+    <button class="iclose" onclick="document.getElementById('ib').classList.remove('show')">x</button>
+    <strong>Add to Home Screen</strong>
+    <p>Tap the share icon, then "Add to Home Screen" to install MedReel like an app.</p>
+  </div>
+</div>
+<script>
+const cards=[
+  {topic:"Cardiology",bg:"#100808",accent:"#E24B4A",g2:"#7a1818",pb:"rgba(226,75,74,0.13)",pbc:"rgba(226,75,74,0.32)",pc:"#f5a0a0",bb:"rgba(226,75,74,0.18)",bc:"#fac0c0",plbg:"#c0302f",
+   text:"Myocardial infarction occurs when a coronary artery becomes occluded, causing ischemia and necrosis of cardiac muscle. ST-elevation on ECG indicates a full-thickness infarct. Troponin and CK-MB are the key biomarkers.",
+   buzz:["myocardial","infarction","coronary","artery","occluded","ischemia","necrosis","st-elevation","ecg","troponin","ck-mb","biomarkers"]},
+  {topic:"Respiratory",bg:"#070c14",accent:"#378ADD",g2:"#0a2a5a",pb:"rgba(55,138,221,0.13)",pbc:"rgba(55,138,221,0.3)",pc:"#88bbee",bb:"rgba(55,138,221,0.17)",bc:"#aad0f5",plbg:"#1a5fa0",
+   text:"Asthma is a chronic inflammatory airway disease characterized by bronchospasm and reversible obstruction. Albuterol is a beta-2 agonist used for bronchodilation. Peak flow monitoring tracks disease severity.",
+   buzz:["asthma","chronic","inflammatory","bronchospasm","reversible","obstruction","albuterol","beta-2","agonist","bronchodilation","peak","flow"]},
+  {topic:"Pharmacology",bg:"#0a0814",accent:"#7F77DD",g2:"#2a1a6a",pb:"rgba(127,119,221,0.13)",pbc:"rgba(127,119,221,0.3)",pc:"#b0a8ee",bb:"rgba(127,119,221,0.17)",bc:"#ccc8f8",plbg:"#4a44aa",
+   text:"ACE inhibitors block conversion of angiotensin I to angiotensin II, reducing vasoconstriction and aldosterone secretion. Used in hypertension and heart failure. Side effect: dry cough due to bradykinin accumulation.",
+   buzz:["ace","inhibitors","angiotensin","vasoconstriction","aldosterone","hypertension","heart","failure","bradykinin","accumulation"]},
+  {topic:"Neurology",bg:"#07100d",accent:"#1D9E75",g2:"#083d28",pb:"rgba(29,158,117,0.13)",pbc:"rgba(29,158,117,0.3)",pc:"#5dcaa5",bb:"rgba(29,158,117,0.17)",bc:"#8edec4",plbg:"#0f6e52",
+   text:"Ischemic stroke results from thrombotic or embolic occlusion of a cerebral artery. CT scan rules out hemorrhage. tPA thrombolysis is indicated within 4.5 hours of symptom onset. NIHSS scores neurological deficits.",
+   buzz:["ischemic","stroke","thrombotic","embolic","occlusion","cerebral","ct","scan","hemorrhage","tpa","thrombolysis","nihss","neurological"]}
+];
+
+let cur=0,animTimer=null,htimer=null,playing=false;
+
+function cl(w){return w.toLowerCase().replace(/[^a-z0-9-]/g,'');}
+function ib(w,l){const c=cl(w);return l.some(b=>cl(b)===c);}
+function pI(){return'<svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor"><polygon points="8,5 19,11 8,17"/></svg>';}
+function paI(){return'<svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor"><rect x="5" y="4" width="4.5" height="14" rx="1.5"/><rect x="12.5" y="4" width="4.5" height="14" rx="1.5"/></svg>';}
+function rI(){return'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 9a7.5 7.5 0 1 0 1.4-4.3"/><polyline points="1.5,1.5 1.5,6 6,6"/></svg>';}
+function sI(f){return f?'<svg width="18" height="18" viewBox="0 0 18 18" fill="#EF9F27" stroke="#EF9F27" stroke-width="1.2"><polygon points="9,2 11.4,6.8 16.8,7.5 12.9,11.3 13.9,16.7 9,14.1 4.1,16.7 5.1,11.3 1.2,7.5 6.6,6.8"/></svg>':'<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="9,2 11.4,6.8 16.8,7.5 12.9,11.3 13.9,16.7 9,14.1 4.1,16.7 5.1,11.3 1.2,7.5 6.6,6.8"/></svg>';}
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+function stopCard(idx){
+  if(animTimer){clearTimeout(animTimer);animTimer=null;}
+  if(htimer){clearTimeout(htimer);htimer=null;}
+  playing=false;
+  const pb=document.getElementById('pb'+idx);if(pb)pb.innerHTML=pI();
+}
+
+function resetWords(idx){
+  const s=document.getElementById('s'+idx);if(!s)return;
+  s.querySelectorAll('.w').forEach(w=>w.classList.remove('on'));
+  const p=document.getElementById('pl'+idx);if(p)p.style.width='0%';
+}
+
+function playCard(idx){
+  stopCard(idx);
+  resetWords(idx);
+  const s=document.getElementById('s'+idx);if(!s)return;
+  const words=Array.from(s.querySelectorAll('.w'));
+  const pb=document.getElementById('pb'+idx);
+  const pl=document.getElementById('pl'+idx);
+  const sh=document.getElementById('sh'+idx);
+  playing=true;
+  if(pb)pb.innerHTML=paI();
+  let i=0;
+  function next(){
+    if(!playing)return;
+    if(i<words.length){
+      words[i].classList.add('on');
+      if(pl)pl.style.width=Math.round((i+1)/words.length*100)+'%';
+      const bz=words[i].classList.contains('buzz');
+      i++;
+      animTimer=setTimeout(next,bz?330:200);
+    } else {
+      playing=false;
+      if(pb)pb.innerHTML=pI();
+      if(pl)pl.style.width='100%';
+      if(sh){sh.classList.add('show');htimer=setTimeout(()=>sh.classList.remove('show'),3500);}
+    }
+  }
+  next();
+}
+
+function togglePlay(idx){
+  if(playing){stopCard(idx);}
+  else{playCard(idx);}
+}
+
+function buildCard(card,idx){
+  const d=document.createElement('div');d.className='card';d.style.background=card.bg;
+  const g=document.createElement('div');g.className='card-glow';g.style.background=card.accent;d.appendChild(g);
+  const g2=document.createElement('div');g2.className='card-glow2';g2.style.background=card.g2;d.appendChild(g2);
+  const badge=document.createElement('div');badge.className='badge';badge.style.background=card.pb;badge.style.borderColor=card.pbc;badge.style.color=card.pc;badge.textContent=card.topic;d.appendChild(badge);
+  const cn=document.createElement('div');cn.className='cnum';cn.textContent=(idx+1)+' / '+cards.length;d.appendChild(cn);
+  const stage=document.createElement('div');stage.className='stage';stage.id='s'+idx;
+  card.text.split(/\s+/).forEach(w=>{
+    const sp=document.createElement('span');
+    const buzz=ib(w,card.buzz);
+    sp.className='w'+(buzz?' buzz':'');
+    if(buzz){sp.style.background=card.bb;sp.style.color=card.bc;}
+    sp.textContent=w;
+    stage.appendChild(sp);
+  });
+  d.appendChild(stage);
+  const pl=document.createElement('div');pl.className='pline';pl.id='pl'+idx;pl.style.background=card.accent;d.appendChild(pl);
+  const bb=document.createElement('div');bb.className='bbar';
+  const ct=document.createElement('div');ct.className='ctrls';
+  const rb=document.createElement('button');rb.className='ctrl csm';rb.setAttribute('aria-label','replay');rb.innerHTML=rI();rb.onclick=()=>playCard(idx);
+  const pb=document.createElement('button');pb.className='ctrl cpl';pb.id='pb'+idx;pb.style.background=card.plbg;pb.setAttribute('aria-label','play/pause');pb.innerHTML=pI();pb.onclick=()=>togglePlay(idx);
+  const sb=document.createElement('button');sb.className='ctrl csm';sb.setAttribute('aria-label','save');sb.innerHTML=sI(false);let saved=false;
+  sb.onclick=()=>{saved=!saved;sb.innerHTML=sI(saved);toast(saved?'Saved to favorites':'Removed');};
+  ct.appendChild(rb);ct.appendChild(pb);ct.appendChild(sb);bb.appendChild(ct);
+  const sh=document.createElement('div');sh.className='shint';sh.id='sh'+idx;
+  sh.textContent=idx<cards.length-1?'swipe up for next':'back to start';
+  bb.appendChild(sh);
+  d.appendChild(bb);return d;
+}
+
+function goTo(idx){
+  stopCard(cur);
+  resetWords(cur);
+  cur=idx;
+  document.getElementById('track').style.transform='translateY(-'+(cur*window.innerHeight)+'px)';
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  setTimeout(()=>playCard(cur),500);
+}
+
+function nextCard(){if(cur<cards.length-1)goTo(cur+1);}
+function prevCard(){if(cur>0)goTo(cur-1);}
+
+(function init(){
+  const track=document.getElementById('track');
+  const dots=document.getElementById('dots');
+  cards.forEach((c,i)=>{
+    track.appendChild(buildCard(c,i));
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    dots.appendChild(d);
+  });
+
+  let ty=0,tx=0,drag=false;
+  const reel=document.getElementById('reel');
+  reel.addEventListener('touchstart',e=>{ty=e.touches[0].clientY;tx=e.touches[0].clientX;drag=true;},{passive:true});
+  reel.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    const dy=ty-e.touches[0].clientY,dx=Math.abs(tx-e.touches[0].clientX);
+    if(Math.abs(dy)>dx)e.preventDefault();
+  },{passive:false});
+  reel.addEventListener('touchend',e=>{
+    if(!drag)return;drag=false;
+    const dy=ty-e.changedTouches[0].clientY,dx=Math.abs(tx-e.changedTouches[0].clientX);
+    if(Math.abs(dy)>40&&Math.abs(dy)>dx){if(dy>0)nextCard();else prevCard();}
+  },{passive:true});
+
+  window.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'||e.key==='ArrowRight')nextCard();
+    if(e.key==='ArrowUp'||e.key==='ArrowLeft')prevCard();
+    if(e.key===' '){e.preventDefault();togglePlay(cur);}
+  });
+
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=window.matchMedia('(display-mode:standalone)').matches||window.navigator.standalone;
+  if(isIOS&&!standalone){
+    setTimeout(()=>{
+      const b=document.getElementById('ib');
+      b.classList.add('show');
+      setTimeout(()=>b.classList.remove('show'),7000);
+    },8000);
+  }
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    setTimeout(()=>document.getElementById('ib').classList.add('show'),4000);
+  });
+
+  setTimeout(()=>playCard(0),400);
+})();
+</script>
+</body>
+</html>
